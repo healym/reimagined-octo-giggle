@@ -601,13 +601,15 @@ namespace Brain {
     // PAWNS
     if(!(color == 'w' && rank == 1) // don't check off the board
         && !(color=='b' && rank == 8)
-        && board[file-66][rank+pawn_offset] == 'P' + color_offset) {
+        && file-66 >= 0 
+        && board[file-66][rank-1+pawn_offset] == 'P' + color_offset) {
       return true;
     }
 
     if(!(color == 'w' && rank == 1) // don't check off the board
         && !(color=='b' && rank == 8)
-        && board[file-64][rank+pawn_offset] == 'P' + color_offset) {
+        && file-64 >= 0
+        && board[file-64][rank-1+pawn_offset] == 'P' + color_offset) {
       return true;
     }
 

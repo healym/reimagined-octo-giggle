@@ -74,11 +74,12 @@ bool AI::run_turn()
   vector<Brain::Action> randomPieceMoves;
   Brain::GameInfo info = Brain::info_from_fen(game->fen);
   c_board.start_pos(game->fen);
+  int depth = get_setting("depth_limit") != "" ? stoi(get_setting("depth_limit")) : 2;
 
-  cout << "\n      +-----------------+" << endl;
+  cout << "\n         +-----------------+" << endl;
   for (int i = 7; i >= 0; i--)
   {
-    cout << "    " << i + 1 << " | "
+    cout << "       " << i + 1 << " | "
     << c_board.txt_board[0][i] << " "
     << c_board.txt_board[1][i] << " "
     << c_board.txt_board[2][i] << " "
@@ -89,7 +90,7 @@ bool AI::run_turn()
     << c_board.txt_board[7][i] << " |"
     << endl;
   }
-  cout << "      +-----------------+\n        a b c d e f g h" << endl;
+  cout << "         +-----------------+\n           a b c d e f g h" << endl;
 
   chess::Move last_move = game->moves.size() >= 2 ? game->moves[game->moves.size() - 2] : nullptr;
   string last_move_string = last_move != nullptr ? last_move->san : ""; 
@@ -111,7 +112,7 @@ bool AI::run_turn()
   }
   string color = player->color == "White" ? "Black" : "White"; // first color gets inverted for move generation
   Node root(player->color, moves, c_board);
-  action = Search::IteratingDepthDepthLimitedMiniMax(root, stoi(get_setting("depth_limit")));
+  action = Search::IteratingDepthDepthLimitedMiniMax(root, depth);
   Piece piece_to_move = nullptr;
 
   for( auto piece : game->pieces) {
