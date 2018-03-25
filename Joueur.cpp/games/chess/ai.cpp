@@ -113,6 +113,71 @@ bool AI::run_turn()
   string color = player->color == "White" ? "Black" : "White"; // first color gets inverted for move generation
   Node root(player->color, moves, c_board);
   action = Search::IteratingDepthDepthLimitedMiniMax(root, depth);
+  cout << "= [ LEGAL MOVES FOR PIECE "
+       << action.piece() << " at "
+       << string(1, action.last_file())
+       << action.last_rank()
+       << "] ="
+       << endl;
+  switch(action.piece()[0])
+  {
+    case 'P':
+    case 'p':
+        randomPieceMoves = Brain::Pawn::Actions(action.last_rank(),
+                                                action.last_file(),
+                                                tolower(player->color[0]),
+                                                c_board.txt_board,
+                                                last_move_string,
+                                                next_last_move_string);
+        break;
+
+    case 'N':
+    case 'n':
+        randomPieceMoves = Brain::Knight::Actions(action.last_rank(),
+                                                action.last_file(),
+                                                tolower(player->color[0]),
+                                                c_board.txt_board);
+        break;
+
+    case 'B':
+    case 'b':
+        randomPieceMoves = Brain::Bishop::Actions(action.last_rank(),
+                                                action.last_file(),
+                                                tolower(player->color[0]),
+                                                c_board.txt_board);
+        break;
+
+    case 'R':
+    case 'r':
+        randomPieceMoves = Brain::Rook::Actions(action.last_rank(),
+                                                action.last_file(),
+                                                tolower(player->color[0]),
+                                                c_board.txt_board);
+        break;
+    
+    case 'Q':
+    case 'q':
+        randomPieceMoves = Brain::Queen::Actions(action.last_rank(),
+                                                action.last_file(),
+                                                tolower(player->color[0]),
+                                                c_board.txt_board);
+        break;
+    
+    case 'K':
+    case 'k':
+        randomPieceMoves = Brain::King::Actions(action.last_rank(),
+                                                action.last_file(),
+                                                tolower(player->color[0]),
+                                                c_board.txt_board);
+        break;
+  }
+
+  for (Brain::Action action : randomPieceMoves)
+  {
+      cout << "::::::            "
+      << action.piece() << string(1, action.file()) << action.rank() << "         ::::::"
+      << endl;
+  }
   Piece piece_to_move = nullptr;
 
   for( auto piece : game->pieces) {
