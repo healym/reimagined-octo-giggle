@@ -3,17 +3,18 @@
 
 #include "ai.hpp"
 
-#include <ctime>
-#include <cstdlib>
-
+// <<-- Creer-Merge: includes -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.
 // You can add #includes here for your AI.
+#include "brain/search.hpp"
+#include "brain/algorithms.hpp"
+// <<-- /Creer-Merge: includes -->>
 
 namespace cpp_client
 {
 
 namespace chess
 {
-
+Brain::Chessboard c_board;
 /// <summary>
 /// This returns your AI's name to the game server.
 /// Replace the string name.
@@ -21,8 +22,10 @@ namespace chess
 /// <returns>The name of your AI.</returns>
 std::string AI::get_name() const
 {
+    // <<-- Creer-Merge: get-name -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.
     // REPLACE WITH YOUR TEAM NAME!
-    return "Chess C++ Player";
+    return "letting_you_win_on_purpose";
+    // <<-- /Creer-Merge: get-name -->>
 }
 
 /// <summary>
@@ -30,8 +33,10 @@ std::string AI::get_name() const
 /// </summary>
 void AI::start()
 {
+    // <<-- Creer-Merge: start -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.
     // This is a good place to initialize any variables
-    srand(time(NULL));
+
+    // <<-- /Creer-Merge: start -->>
 }
 
 /// <summary>
@@ -39,7 +44,9 @@ void AI::start()
 /// </summary>
 void AI::game_updated()
 {
+    // <<-- Creer-Merge: game-updated -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.
     // If a function you call triggers an update this will be called before it returns.
+    // <<-- /Creer-Merge: game-updated -->>
 }
 
 /// <summary>
@@ -49,7 +56,9 @@ void AI::game_updated()
 /// <param name="reason">An explanation for why you either won or lost</param>
 void AI::ended(bool won, const std::string& reason)
 {
+    //<<-- Creer-Merge: ended -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.
     // You can do any cleanup of your AI here.  The program ends when this function returns.
+    //<<-- /Creer-Merge: ended -->>
 }
 
 /// <summary>
@@ -58,102 +67,73 @@ void AI::ended(bool won, const std::string& reason)
 /// <returns>Represents if you want to end your turn. True means end your turn, False means to keep your turn going and re-call this function.</returns>
 bool AI::run_turn()
 {
-    // Here is where you'll want to code your AI.
+  // <<-- Creer-Merge: runTurn -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.
+  // Put your game logic here for run_turn here
+  // Here is where you'll want to code your AI.
+  vector<Brain::Action> actions;
+  vector<Brain::Action> randomPieceMoves;
+  Brain::GameInfo info = Brain::info_from_fen(game->fen);
+  c_board.start_pos(game->fen);
 
-    // We've provided sample code that:
-    //    1) prints the board to the console
-    //    2) prints the opponent's last move to the console
-    //    3) prints how much time remaining this AI has to calculate moves
-    //    4) makes a random (and probably invalid) move.
+  cout << "\n      +-----------------+" << endl;
+  for (int i = 7; i >= 0; i--)
+  {
+    cout << "    " << i + 1 << " | "
+    << c_board.txt_board[0][i] << " "
+    << c_board.txt_board[1][i] << " "
+    << c_board.txt_board[2][i] << " "
+    << c_board.txt_board[3][i] << " "
+    << c_board.txt_board[4][i] << " "
+    << c_board.txt_board[5][i] << " "
+    << c_board.txt_board[6][i] << " "
+    << c_board.txt_board[7][i] << " |"
+    << endl;
+  }
+  cout << "      +-----------------+\n        a b c d e f g h" << endl;
 
-    // 1) print the board to the console
-    print_current_board();
-
-    // 2) print the opponent's last move to the console
-    if(game->moves.size() > 0)
-    {
-        std::cout << "Opponent's Last Move: '" << game->moves[game->moves.size() - 1]->san << "'" << std::endl;
+  chess::Move last_move = game->moves.size() >= 2 ? game->moves[game->moves.size() - 2] : nullptr;
+  string last_move_string = last_move != nullptr ? last_move->san : ""; 
+  chess::Move next_last_move = game->moves.size() >= 4 ? game->moves[game->moves.size() - 4] : nullptr;
+  string next_last_move_string = next_last_move != nullptr ? next_last_move->san : "";
+  chess::Move third_move = game->moves.size() >= 6 ? game->moves[game->moves.size() - 6] : nullptr;
+  string third_move_string = third_move != nullptr ? third_move->san : "";
+  std::vector<Brain::Action> moves;
+  moves.clear();
+  Brain::Action action;
+  if (last_move_string != "") { // load moves vector if starting state isn't standard
+    moves.push_back(Brain::Action(last_move_string.substr(0,1), last_move_string.substr(1,1), last_move_string.substr(2,1)));
+    if (next_last_move_string != "") {
+      moves.push_back(Brain::Action(next_last_move_string.substr(0,1), next_last_move_string.substr(1,1), next_last_move_string.substr(2)));
+      if (third_move_string != "") {
+          moves.push_back(Brain::Action(third_move_string.substr(0,1), third_move_string.substr(1,1), third_move_string.substr(2,1)));
+      }
     }
+  }
+  string color = player->color == "White" ? "Black" : "White"; // first color gets inverted for move generation
+  Node root(player->color, moves, c_board);
+  action = Search::IteratingDepthDepthLimitedMiniMax(root, stoi(get_setting("depth_limit")));
+  Piece piece_to_move = nullptr;
 
-    // 3) print how much time remaining this AI has to calculate moves
-    std::cout << "Time Remaining: " << player->time_remaining << " ns" << std::endl;
+  for( auto piece : game->pieces) {
+    if(piece->file == string(1, tolower(action.last_file())) && piece->rank == action.last_rank()) {
+      piece_to_move = piece;
+      break;
+    }
+  }
 
-    // 4) make a random (and probably invalid) move.
-    chess::Piece random_piece = player->pieces[rand() % player->pieces.size()];
-    std::string random_file(1, 'a' + rand() % 8);
-    int random_rank = (rand() % 8) + 1;
-    random_piece->move(random_file, random_rank);
+  string file = string(1, tolower(action.file()));
+  int rank = action.rank();
+  string promote = action.promote();
+  piece_to_move->move(file, rank, promote);
+  cout << "       =<< MOVING : " << action.piece() << string(1,action.file()) << action.rank() << " >>=" << endl;
 
-    return true; // to signify we are done with our turn.
+  return true; // to signify we are done with our turn.
+  // <<-- /Creer-Merge: runTurn -->>
 }
 
-/// <summary>
-///  Prints the current board using pretty ASCII art
-/// </summary>
-/// <remarks>
-/// Note: you can delete this function if you wish
-/// </remarks>
-void AI::print_current_board()
-{
-    for(int rank = 9; rank >= -1; rank--)
-    {
-        std::string str = "";
-        if(rank == 9 || rank == 0) // then the top or bottom of the board
-        {
-            str = "   +------------------------+";
-        }
-        else if(rank == -1) // then show the ranks
-        {
-            str = "     a  b  c  d  e  f  g  h";
-        }
-        else // board
-        {
-            str += " ";
-            str += std::to_string(rank);
-            str += " |";
-            // fill in all the files with pieces at the current rank
-            for(int file_offset = 0; file_offset < 8; file_offset++)
-            {
-                std::string file(1, 'a' + file_offset); // start at a, with with file offset increasing the char;
-                chess::Piece current_piece = nullptr;
-                for(const auto& piece : game->pieces)
-                {
-                    if(piece->file == file && piece->rank == rank) // then we found the piece at (file, rank)
-                    {
-                        current_piece = piece;
-                        break;
-                    }
-                }
-
-                char code = '.'; // default "no piece";
-                if(current_piece != nullptr)
-                {
-                    code = current_piece->type[0];
-
-                    if(current_piece->type == "Knight") // 'K' is for "King", we use 'N' for "Knights"
-                    {
-                        code = 'N';
-                    }
-
-                    if(current_piece->owner->id == "1") // the second player (black) is lower case. Otherwise it's upppercase already
-                    {
-                        code = tolower(code);
-                    }
-                }
-
-                str += " ";
-                str += code;
-                str += " ";
-            }
-
-            str += "|";
-        }
-
-        std::cout << str << std::endl;
-    }
-}
-
+//<<-- Creer-Merge: methods -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.
 // You can add additional methods here for your AI to call
+//<<-- /Creer-Merge: methods -->>
 
 } // chess
 
