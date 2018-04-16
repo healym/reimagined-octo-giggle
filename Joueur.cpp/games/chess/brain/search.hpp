@@ -35,10 +35,11 @@ public:
   bool is_goal()const { return m_is_goal; };
   int depth() const { return m_depth; };
   int score() const { return m_score; };
+  char player() const { return m_player[0]; };
   Brain::GameInfo info() const { return m_info; };
   Node* parent() const { return m_parent; };
   Brain::Action action() const { return m_action; };
-  Brain::Chessboard board();
+  Brain::Chessboard board() const { return m_board; };
   /// <summary>
   /// returns a vector of actions that can be taken, given the node's state
   /// </summary>

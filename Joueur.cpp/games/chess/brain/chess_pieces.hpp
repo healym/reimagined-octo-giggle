@@ -49,7 +49,7 @@ public:
       m_promote(in_promote),
       capture(capt) {};
   bool capture;
-  string piece() const { return m_piece; };
+  std::string piece() const { return m_piece; };
   void piece_set(string piece) { m_piece = piece; };
   int rank() const { return m_rank; };
   int last_rank() const { return m_lrank; };
@@ -58,13 +58,17 @@ public:
   string promote() const { return m_promote; };
   bool operator<(const Brain::Action &rhs);
   bool operator==(const Brain::Action &rhs) const;
+  std::string String() const { return std::string(1, m_lfile)
+      + to_string(m_lrank)
+      + std::string(1, m_file)
+      + to_string(m_rank); };
 private:
-  string m_piece;
+  std::string m_piece;
   int m_lrank;
   char m_lfile;
   int m_rank;
   char m_file;
-  string m_promote;
+  std::string m_promote;
 };
 
 class Piece {

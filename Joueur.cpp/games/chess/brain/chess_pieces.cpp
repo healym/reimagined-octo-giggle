@@ -514,7 +514,11 @@ namespace Brain {
     file = toupper(file); // ensure file is expected values
     int f,r;
     int color_offset = color == 'w' ? 32 : 0;
-    int pawn_offset = color == 'w' ? -1 : 1;
+    int pawn_offset = color == 'w' ? 1 : -1;
+    if (board[file-65][rank-1] >= 'A' + color_offset
+        && board[file-65][rank-1] < 'Z' + color_offset) {
+          return false;
+        }
 
     // ROOKS AND QUEENS
     for (int r = rank; r < 8; r++) { // checking up

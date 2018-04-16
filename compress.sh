@@ -8,4 +8,4 @@ LANG=$1
 
 cd $LANG
 zip -r $LANG.zip .
-mv $LANG.zp ../
+mv $LANG.zip ../

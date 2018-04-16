@@ -3,9 +3,9 @@
 # You would add the following line to this folder (without the #)
 # my_code/stuff.cpp
 # If your build fails after adding files, try to build again
-brain/chess_pieces.cpp
-brain/chess_pieces.hpp
-brain/search.hpp
-brain/search.cpp
 brain/algorithms.hpp
 brain/algorithms.cpp
+brain/search.hpp
+brain/search.cpp
+brain/chess_pieces.hpp
+brain/chess_pieces.cpp

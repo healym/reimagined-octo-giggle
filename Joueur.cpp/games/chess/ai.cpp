@@ -9,6 +9,8 @@
 #include "brain/algorithms.hpp"
 // <<-- /Creer-Merge: includes -->>
 
+#define INF 2147483647
+
 namespace cpp_client
 {
 
@@ -35,7 +37,6 @@ void AI::start()
 {
     // <<-- Creer-Merge: start -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.
     // This is a good place to initialize any variables
-
     // <<-- /Creer-Merge: start -->>
 }
 
@@ -74,7 +75,8 @@ bool AI::run_turn()
   vector<Brain::Action> randomPieceMoves;
   Brain::GameInfo info = Brain::info_from_fen(game->fen);
   c_board.start_pos(game->fen);
-  int depth = get_setting("depth_limit") != "" ? stoi(get_setting("depth_limit")) : 2;
+  int depth = get_setting("depth_limit") != "" ? stoi(get_setting("depth_limit")) : 3;
+  int qlimit = 2;
 
   cout << "\n         +-----------------+" << endl;
   for (int i = 7; i >= 0; i--)
@@ -112,76 +114,11 @@ bool AI::run_turn()
   }
   string color = player->color == "White" ? "Black" : "White"; // first color gets inverted for move generation
   Node root(player->color, moves, c_board);
-  action = Search::IteratingDepthDepthLimitedMiniMax(root, depth);
-  cout << "= [ LEGAL MOVES FOR PIECE "
-       << action.piece() << " at "
-       << string(1, action.last_file())
-       << action.last_rank()
-       << "] ="
-       << endl;
-  switch(action.piece()[0])
-  {
-    case 'P':
-    case 'p':
-        randomPieceMoves = Brain::Pawn::Actions(action.last_rank(),
-                                                action.last_file(),
-                                                tolower(player->color[0]),
-                                                c_board.txt_board,
-                                                last_move_string,
-                                                next_last_move_string);
-        break;
-
-    case 'N':
-    case 'n':
-        randomPieceMoves = Brain::Knight::Actions(action.last_rank(),
-                                                action.last_file(),
-                                                tolower(player->color[0]),
-                                                c_board.txt_board);
-        break;
-
-    case 'B':
-    case 'b':
-        randomPieceMoves = Brain::Bishop::Actions(action.last_rank(),
-                                                action.last_file(),
-                                                tolower(player->color[0]),
-                                                c_board.txt_board);
-        break;
-
-    case 'R':
-    case 'r':
-        randomPieceMoves = Brain::Rook::Actions(action.last_rank(),
-                                                action.last_file(),
-                                                tolower(player->color[0]),
-                                                c_board.txt_board);
-        break;
-    
-    case 'Q':
-    case 'q':
-        randomPieceMoves = Brain::Queen::Actions(action.last_rank(),
-                                                action.last_file(),
-                                                tolower(player->color[0]),
-                                                c_board.txt_board);
-        break;
-    
-    case 'K':
-    case 'k':
-        randomPieceMoves = Brain::King::Actions(action.last_rank(),
-                                                action.last_file(),
-                                                tolower(player->color[0]),
-                                                c_board.txt_board);
-        break;
-  }
-
-  for (Brain::Action action : randomPieceMoves)
-  {
-      cout << "::::::            "
-      << action.piece() << string(1, action.file()) << action.rank() << "         ::::::"
-      << endl;
-  }
+  action = Search::TLHTQSIDABDLMM(root, game->current_turn, player->time_remaining, -INF, INF, qlimit, depth);
   Piece piece_to_move = nullptr;
 
-  for( auto piece : game->pieces) {
-    if(piece->file == string(1, tolower(action.last_file())) && piece->rank == action.last_rank()) {
+  for (auto piece : game->pieces) {
+    if (piece->file == string(1, tolower(action.last_file())) && piece->rank == action.last_rank()) {
       piece_to_move = piece;
       break;
     }
@@ -191,7 +128,7 @@ bool AI::run_turn()
   int rank = action.rank();
   string promote = action.promote();
   piece_to_move->move(file, rank, promote);
-  cout << "       =<< MOVING : " << action.piece() << string(1,action.file()) << action.rank() << " >>=" << endl;
+  cout << "        =<< MOVING : " << action.piece() << string(1,action.file()) << action.rank() << " >>=" << endl;
 
   return true; // to signify we are done with our turn.
   // <<-- /Creer-Merge: runTurn -->>
